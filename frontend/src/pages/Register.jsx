@@ -1,11 +1,70 @@
+import axios from "axios";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../api/base";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
+const getErrorMessage = (error) => {
+  const data = error.response?.data;
+
+  if (!data) {
+    return "Unable to register right now. Please try again.";
+  }
+
+  if (typeof data === "string") {
+    return data;
+  }
+
+  if (typeof data === "object") {
+    return Object.entries(data)
+      .map(([field, messages]) => {
+        const message = Array.isArray(messages) ? messages.join(" ") : messages;
+        return `${field}: ${message}`;
+      })
+      .join(" ");
+  }
+
+  return "Unable to register right now. Please try again.";
+};
+
 const Register = () => {
-  const handleSubmit = (event) => {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    alert("Register form is ready for backend API integration.");
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    const username = formData.get("username").trim();
+    const email = formData.get("email").trim();
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await axios.post(`${BASE_URL}register/`, {
+        username,
+        email,
+        password,
+      });
+
+      navigate("/login", {
+        state: { message: "Registration successful. You can now log in." },
+      });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -19,6 +78,11 @@ const Register = () => {
           <h1 className="mt-3 text-3xl font-bold text-slate-950">
             Join Rivansh
           </h1>
+          {error ? (
+            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div>
@@ -87,9 +151,10 @@ const Register = () => {
 
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full rounded-lg bg-[#061947] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0b255f]"
             >
-              Register
+              {isLoading ? "Creating account..." : "Register"}
             </button>
           </form>
 

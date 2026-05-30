@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from .models import CartUser, Product
-from .serializers import CartUserSerializer, ProductSerializer
+from .serializers import CartUserSerializer, ProductSerializer, RegisterSerializer, UserSerializer
 from rest_framework.response import Response
 
 
@@ -123,3 +123,21 @@ def remove_from_cart(request, pk):
         {'message': 'Product removed from cart'},
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    serializer = RegisterSerializer(data=request.data)
+
+    if serializer.is_valid():
+        user = serializer.save()
+        user_serializer = UserSerializer(user)
+        return Response(user_serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)

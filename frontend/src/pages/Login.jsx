@@ -1,11 +1,43 @@
+import axios from "axios";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../api/base";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
 const Login = () => {
-  const handleSubmit = (event) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const successMessage = location.state?.message;
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    alert("Login form is ready for backend API integration.");
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    const username = formData.get("username").trim();
+    const password = formData.get("password");
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${BASE_URL}api/token/`, {
+        username,
+        password,
+      });
+
+      localStorage.setItem("accessToken", response.data.access);
+      localStorage.setItem("refreshToken", response.data.refresh);
+      navigate("/profile");
+    } catch (err) {
+      const apiMessage =
+        err.response?.data?.detail || "Invalid username or password.";
+      setError(apiMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -19,18 +51,28 @@ const Login = () => {
           <h1 className="mt-3 text-3xl font-bold text-slate-950">
             Welcome back
           </h1>
+          {successMessage ? (
+            <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {successMessage}
+            </p>
+          ) : null}
+          {error ? (
+            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-medium text-slate-700"
               >
                 Email or username
               </label>
               <input
-                id="email"
-                name="email"
+                id="username"
+                name="username"
                 type="text"
                 required
                 className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[#061947] focus:ring-2 focus:ring-[#061947]/20"
@@ -55,9 +97,10 @@ const Login = () => {
 
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full rounded-lg bg-[#061947] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0b255f]"
             >
-              Login
+              {isLoading ? "Signing in..." : "Login"}
             </button>
           </form>
 
