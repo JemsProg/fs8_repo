@@ -1,12 +1,14 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../api/base";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { AuthContext } from "../context/AuthProvider";
 
 const Login = () => {
+  const { setIsAuthenticated } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -30,6 +32,7 @@ const Login = () => {
 
       localStorage.setItem("accessToken", response.data.access);
       localStorage.setItem("refreshToken", response.data.refresh);
+      setIsAuthenticated(true);
       navigate("/profile");
     } catch (err) {
       const apiMessage =

@@ -12,13 +12,6 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-
-    if (!accessToken) {
-      navigate("/login");
-      return;
-    }
-
     const fetchProfile = async () => {
       try {
         const response = await axios.get(`${BASE_URL}user-profile/`, {
