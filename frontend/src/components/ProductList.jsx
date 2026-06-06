@@ -12,7 +12,6 @@ const ProductList = () => {
       setProducts(response.data);
     } catch (err) {
       console.log(err);
-      console.log("Hello error");
     }
   };
 
