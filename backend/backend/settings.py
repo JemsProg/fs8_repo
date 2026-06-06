@@ -62,9 +62,9 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://sub.example.com",
-    "http://localhost:8080",
-    "http://127.0.0.1:9000",
+    "https://fs8-repo.vercel.app",
+    "https://fs8-repo-git-main-jemsprogs-projects.vercel.app",
+    "https://fs8-repo-o9pl4rsvb-jemsprogs-projects.vercel.app",
 ]
 
 ROOT_URLCONF = 'backend.urls'
